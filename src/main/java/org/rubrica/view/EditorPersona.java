@@ -97,6 +97,11 @@ public class EditorPersona extends JDialog {
         if (telefono.getText().trim().isEmpty()) return "Il telefono è obbligatorio.";
         if (eta.getText().trim().isEmpty()) return "L'età è obbligatoria.";
 
+        if (nome.getText().contains(";") || cognome.getText().contains(";") ||
+                indirizzo.getText().contains(";") || telefono.getText().contains(";")) {
+            return "I campi non possono contenere il carattere ';'.";
+        }
+
         try {
             int etaVal = Integer.parseInt(eta.getText().trim());
             if (etaVal < 0 || etaVal > 101) return "L'età deve essere compresa tra 0 e 100.";
