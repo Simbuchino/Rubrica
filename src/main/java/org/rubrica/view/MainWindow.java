@@ -11,9 +11,6 @@ public class MainWindow extends JFrame {
 
     private final DefaultTableModel tableModel;
     private final JTable jTable;
-    private final JButton btnNuovo = new JButton("Nuovo");
-    private final JButton btnModifica = new JButton("Modifica");
-    private final JButton btnElimina = new JButton("Elimina");
     private final RubricaController rubricaController;
 
     public MainWindow() {
@@ -38,11 +35,18 @@ public class MainWindow extends JFrame {
         JScrollPane scrollPane = new JScrollPane(jTable);
         this.add(scrollPane, BorderLayout.CENTER);
 
-        JPanel btnPanel = new JPanel();
-        btnPanel.add(btnNuovo);
-        btnPanel.add(btnModifica);
-        btnPanel.add(btnElimina);
-        this.add(btnPanel, BorderLayout.SOUTH);
+
+
+        JButton btnNuovo = new JButton("Nuovo");
+        JButton btnModifica = new JButton("Modifica");
+        JButton btnElimina = new JButton("Elimina");
+        btnNuovo.setIcon(UIManager.getIcon("FileView.fileIcon"));
+        JToolBar toolBar = new JToolBar();
+        toolBar.setFloatable(false);
+        toolBar.add(btnNuovo);
+        toolBar.add(btnModifica);
+        toolBar.add(btnElimina);
+        this.add(toolBar, BorderLayout.NORTH);
 
         btnNuovo.addActionListener(e -> onNuovo());
         btnModifica.addActionListener(e -> onModifica());
@@ -52,17 +56,13 @@ public class MainWindow extends JFrame {
     }
 
     private void onNuovo() {
-        EditorPersona editor = new EditorPersona(this, new PersonaEditorListener() {
-            @Override
-            public void onPersonaSaved(Persona persona) {
-                try {
-                    rubricaController.aggiungiPersona(persona);
-                    aggiornaTabella();
-                } catch (Exception ex) {
-                    mostraErrore("Errore durante il salvataggio: " + ex.getMessage());
-                }
+        EditorPersona editor = new EditorPersona(this, persona -> {
+            try {
+                rubricaController.aggiungiPersona(persona);
+                aggiornaTabella();
+            } catch (Exception ex) {
+                mostraErrore("Errore durante il salvataggio: " + ex.getMessage());
             }
-
         });
         editor.setVisible(true);
     }
@@ -77,17 +77,13 @@ public class MainWindow extends JFrame {
             return;
         }
 
-        EditorPersona editor = new EditorPersona(this, new PersonaEditorListener() {
-            @Override
-            public void onPersonaSaved(Persona persona) {
-                try {
-                    rubricaController.modificaPersona(selectedRow, persona);
-                    aggiornaTabella();
-                } catch (Exception ex) {
-                    mostraErrore("Errore durante la modifica: " + ex.getMessage());
-                }
+        EditorPersona editor = new EditorPersona(this, persona -> {
+            try {
+                rubricaController.modificaPersona(selectedRow, persona);
+                aggiornaTabella();
+            } catch (Exception ex) {
+                mostraErrore("Errore durante la modifica: " + ex.getMessage());
             }
-
         }, rubricaController.getPersone().get(selectedRow));
         editor.setVisible(true);
     }
