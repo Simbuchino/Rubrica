@@ -3,6 +3,7 @@ package org.rubrica.persistence;
 import org.rubrica.model.Persona;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -52,7 +53,7 @@ public class RubricaRepository {
         String nomeFile = file.getFileName().toString().replace(ESTENSIONE, "");
         UUID id = UUID.fromString(nomeFile);
 
-        try (Scanner scanner = new Scanner(file)) {
+        try (Scanner scanner = new Scanner(file, StandardCharsets.UTF_8)) {
             if (!scanner.hasNextLine()) {
                 System.err.println("File vuoto ignorato: " + file.getFileName());
                 return null;
@@ -81,7 +82,7 @@ public class RubricaRepository {
 
         Path filePath = folderPath.resolve(persona.getId().toString() + ESTENSIONE);
 
-        try (PrintStream printStream = new PrintStream(filePath.toFile())) {
+        try (PrintStream printStream = new PrintStream(filePath.toFile(), StandardCharsets.UTF_8)) {
             printStream.println(String.join(SEPARATORE,
                     persona.getNome(),
                     persona.getCognome(),
