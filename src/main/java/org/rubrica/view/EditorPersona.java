@@ -46,12 +46,13 @@ public class EditorPersona extends JDialog {
         fieldsPanel.add(new JLabel("Età:"));
         fieldsPanel.add(eta);
 
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.add(btnAnnulla);
-        buttonPanel.add(btnSalva);
+        JToolBar toolBar = new JToolBar();
+        toolBar.setFloatable(false);
+        toolBar.add(btnAnnulla);
+        toolBar.add(btnSalva);
+        this.add(toolBar, BorderLayout.NORTH);
 
         this.add(fieldsPanel, BorderLayout.CENTER);
-        this.add(buttonPanel, BorderLayout.SOUTH);
         this.setSize(400, 300);
         this.setLocationRelativeTo(parent);
 
