@@ -3,6 +3,7 @@ package org.rubrica.view;
 import org.rubrica.controller.RubricaController;
 import org.rubrica.model.Persona;
 
+import javax.crypto.SecretKey;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -13,8 +14,8 @@ public class MainWindow extends JFrame {
     private final JTable jTable;
     private final RubricaController rubricaController;
 
-    public MainWindow() {
-        this.rubricaController = new RubricaController();
+    public MainWindow(String username, SecretKey encryptionKey) {  // ← Parametri aggiunti
+        this.rubricaController = new RubricaController(username, encryptionKey);
 
         setTitle("Rubrica Telefonica v1.0");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

@@ -3,6 +3,7 @@ package org.rubrica.controller;
 import org.rubrica.model.Persona;
 import org.rubrica.persistence.RubricaRepository;
 
+import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,8 +14,8 @@ public class RubricaController {
     private final List<Persona> persone;
     private final RubricaRepository repository;
 
-    public RubricaController() {
-        this.repository = new RubricaRepository();
+    public RubricaController(String username, SecretKey encryptionKey) {  // ← Parametri aggiunti
+        this.repository = new RubricaRepository(username, encryptionKey);
         List<Persona> caricate = new ArrayList<>();
         try {
             caricate = repository.carica();
