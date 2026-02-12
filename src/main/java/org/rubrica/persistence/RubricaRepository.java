@@ -1,7 +1,9 @@
 package org.rubrica.persistence;
 
 import org.rubrica.model.Persona;
+import org.rubrica.util.CryptoUtil;
 
+import javax.crypto.SecretKey;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -15,16 +17,20 @@ import java.util.stream.Stream;
 
 public class RubricaRepository {
 
-    private static final String CARTELLA = "./informazioni";
+    private static final String CARTELLA_BASE = "./informazioni";
     private static final String ESTENSIONE = ".txt";
     private static final String SEPARATORE = ";";
 
-    private final Path folderPath = Paths.get(CARTELLA);
+    private final Path folderPath;
+    private final SecretKey encryptionKey;  // ← Chiave AES per cifratura
 
-    public RubricaRepository() {
+    public RubricaRepository(String username, SecretKey encryptionKey) {
+        this.encryptionKey = encryptionKey;
+        this.folderPath = Paths.get(CARTELLA_BASE, username);  // informazioni/username/
+
         try {
             if (Files.notExists(folderPath)) {
-                Files.createDirectory(folderPath);
+                Files.createDirectories(folderPath);  // createDirectories = crea anche cartelle parent
             }
         } catch (IOException e) {
             throw new RuntimeException("Impossibile creare la cartella dati: " + folderPath.toAbsolutePath(), e);
@@ -42,14 +48,15 @@ public class RubricaRepository {
                             Persona p = caricaFile(file);
                             if (p != null) output.add(p);
                         } catch (Exception e) {
-                            System.err.println("File ignorato (formato non valido): " + file.getFileName() + " - " + e.getMessage());
+                            System.err.println("File ignorato (formato non valido o chiave errata): " +
+                                    file.getFileName() + " - " + e.getMessage());
                         }
                     });
         }
         return output;
     }
 
-    private Persona caricaFile(Path file) throws IOException {
+    private Persona caricaFile(Path file) throws Exception {
         String nomeFile = file.getFileName().toString().replace(ESTENSIONE, "");
         UUID id = UUID.fromString(nomeFile);
 
@@ -59,8 +66,12 @@ public class RubricaRepository {
                 return null;
             }
 
-            String riga = scanner.nextLine();
-            String[] dati = riga.split(SEPARATORE);
+            String rigaCifrata = scanner.nextLine();
+
+            // ← DECIFRA il contenuto
+            String rigaDecifrata = CryptoUtil.decrypt(rigaCifrata, encryptionKey);
+
+            String[] dati = rigaDecifrata.split(SEPARATORE);
 
             if (dati.length != 5) {
                 throw new IllegalArgumentException("Formato non valido, attesi 5 campi, trovati: " + dati.length);
@@ -82,15 +93,25 @@ public class RubricaRepository {
 
         Path filePath = folderPath.resolve(persona.getId().toString() + ESTENSIONE);
 
-        try (PrintStream printStream = new PrintStream(filePath.toFile(), StandardCharsets.UTF_8)) {
-            printStream.println(String.join(SEPARATORE,
+        try {
+            // Crea stringa in chiaro
+            String plaintext = String.join(SEPARATORE,
                     persona.getNome(),
                     persona.getCognome(),
                     persona.getIndirizzo(),
                     persona.getTelefono(),
                     String.valueOf(persona.getEta())
-            ));
-        } catch (IOException e) {
+            );
+
+            // ← CIFRA il contenuto
+            String ciphertext = CryptoUtil.encrypt(plaintext, encryptionKey);
+
+            // Scrivi solo il ciphertext nel file
+            try (PrintStream printStream = new PrintStream(filePath.toFile(), StandardCharsets.UTF_8)) {
+                printStream.println(ciphertext);
+            }
+
+        } catch (Exception e) {
             throw new RuntimeException("Errore salvataggio persona: " + persona.getId(), e);
         }
     }
